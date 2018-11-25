@@ -4,8 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 ####################################################################
-# Read the data fromm files 
-
+# Read the data from files 
 orl_data = pd.read_csv('./ORL_txt/orl_data.txt' ,sep="	", header=None).transpose()
 orl_data.drop(orl_data.index[400], axis=0, inplace=True)
 orl_data_labels = pd.read_csv('./ORL_txt/orl_lbls.txt ', header=None)
@@ -25,29 +24,32 @@ def applyPCA(data):
 	from sklearn.decomposition import PCA
 	from sklearn.preprocessing import StandardScaler
 	f_transform = StandardScaler().fit_transform(data)
-	pca = PCA(n_components=2, whiten=True).fit_transform(data)
+	pca = PCA(n_components=4 ,  whiten=True ).fit_transform(data)
 	#pca.fit(data)
 	# Project the data in 2D
 	#pca.transform(data)
 	#print(pca)
 	return pca
+
 ####################################################################
 # Display training data with labels and test data with predictions 
 def displayData(data_2D, labels, test_data ,predicted,title):	
 	from matplotlib import pyplot as plt
 	labels = labels.values
 	#predicted = predicted.values
-	plt.figure(figsize=(20, 20)) 
+	plt.figure(figsize=(10, 10)) 
 	plt.scatter(data_2D[:,0], data_2D[:,1],marker="v",  c=labels[:],)
 	plt.scatter(test_data[:,0], test_data[:,1],marker="x",  c=predicted[:])
 	plt.title(title)
 	plt.show()
+
 ####################################################################
 # Nearest Centroid Classifier
 def NearestCentroidClassifier(data, label):
 	from sklearn.neighbors.nearest_centroid import NearestCentroid
 	clf = NearestCentroid().fit(data, label) # label expected array gets 1D matrix future update
 	return clf
+
 ####################################################################
 # Nearest Neighbors Classifier
 def  NearestNeighborsClassifier(data, label):
@@ -67,6 +69,7 @@ MNIST_test_2D = applyPCA(MNIST_test_data)
 ####################################################################
 # orl Data Nearest Centroid Classifier
 classifierORL = NearestCentroidClassifier(orlD_Train,orlL_Train)
+
 print("Nearest Centroid Classifier score for orl Data:")
 print (classifierORL.score(orlD_Test,orlL_Test))
 
@@ -75,6 +78,7 @@ displayData(orlD_Train,orlL_Train,orlD_Test, classifierORL.predict(orlD_Test), "
 ####################################################################
 #MNIST Data Nearest Neighbors Classifier
 classifierMNIST = NearestCentroidClassifier(MNIST_train_2D,MNIST_train_labels)
+
 print("Nearest Centroid Classifier score for MNIST Data:")
 print (classifierMNIST.score(MNIST_test_2D,MNIST_test_labels))
 
@@ -83,6 +87,7 @@ displayData(MNIST_train_2D,MNIST_train_labels,MNIST_test_2D, classifierMNIST.pre
 ####################################################################
 # orl Data Nearest Neighbors Classifier
 classifierORL = NearestNeighborsClassifier(orlD_Train,orlL_Train)
+
 print("Nearest Neighbors Classifier score for orl Data:")
 print (classifierORL.score(orlD_Test,orlL_Test))
 
@@ -91,6 +96,7 @@ displayData(orlD_Train,orlL_Train,orlD_Test, classifierORL.predict(orlD_Test), "
 ####################################################################
 #MNIST Data Nearest Neighbors Classifier
 classifierMNIST = NearestNeighborsClassifier(MNIST_train_2D,MNIST_train_labels)
+
 print ("Nearest Neighbors Classifier score for MNIST Data:" )
 print (classifierMNIST.score(MNIST_test_2D,MNIST_test_labels))
 
