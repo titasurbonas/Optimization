@@ -2,14 +2,14 @@
 import numpy as np
 class Neural_Network(object):
     def __init__(self, learning_rate, input_size,hidden_size, output_size):
-        np.random.seed(2)
+        np.random.seed(3)
         self.learning_rate = learning_rate
         hidden_size = hidden_size
         self.weights1 = np.random.randn(input_size, hidden_size) # random wirghts for (input --> hidden)
         self.weights2 = np.random.randn(hidden_size, output_size)# random wirghts for (hidden --> output)
 
     def forward(self, data):
-        #forward propagation through our network
+        #forward Complexity of use 
 
         hidden_layer_sum = np.dot(data, self.weights1) # dot product of X (input) and set of weights1
         self.hidden_layer_result = self.activation(hidden_layer_sum) # activation function
@@ -19,7 +19,7 @@ class Neural_Network(object):
 
 
     def activation(self, s):
-        return 1 / (1 + np.exp(-s))
+        return 1 / (1 + np.exp(-s))# sigmoid
 
 
     def activation_derivative(self, s):
@@ -27,6 +27,7 @@ class Neural_Network(object):
 
 
     def backward(self, data, label, prediction):
+        #back Complexity of use
         output_delta = (label - prediction) * self.activation_derivative(prediction) # applying derivative of sigmoid to error
         hidden_delta = output_delta.dot(self.weights2.T) * self.activation_derivative(self.hidden_layer_result)# applying derivative of sigmoid to output_delta error
 
@@ -35,8 +36,8 @@ class Neural_Network(object):
 
 
     def train(self, data, label):
-        o = self.forward(data)
-        self.backward(data, label, o)
+        prediction = self.forward(data)
+        self.backward(data, label, prediction)
     def guess(self, data):
         return self.forward(data)
     def score(self, data, labels):
