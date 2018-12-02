@@ -2,7 +2,7 @@
 
 
 import numpy as np
-import NearestSubCentroidClassifier, Neural_Network
+import NearestSubCentroidClassifier, Neural_Network , Perceptron
 from sklearn.model_selection import train_test_split
 
 ####################################################################
@@ -38,7 +38,7 @@ def applyPCA(data):
 
 ####################################################################
 # Display training data with labels and test data with predictions 
-def displayData(data_2D, labels, test_data ,test_labels,algorithm):	#TODO fix displaying data
+def displayData(data_2D, labels, test_data ,test_labels,algorithm):	
 	from matplotlib import pyplot as plt
 	from matplotlib.colors import ListedColormap
 	h = .02 
@@ -55,29 +55,21 @@ def displayData(data_2D, labels, test_data ,test_labels,algorithm):	#TODO fix di
 
 	xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
 						 np.arange(y_min, y_max, h))
+	
 	Z = algorithm.predict(np.c_[xx.ravel(), yy.ravel()])
+
 	Z = Z.reshape(xx.shape)
-	plt.figure()
+
+
+	plt.figure(figsize=(10,10))
 	plt.pcolormesh(xx, yy, Z,cmap=camp)
-	print(len(test_data))
+	#print(len(test_data))
 	if len(test_data) > 400:
 		test_data = test_data[::50]
 		test_labels= test_labels[::50]
-		print(test_data.shape)
-	# Plot also the training points
 
 	plt.scatter(test_data[:,0], test_data[:,1],edgecolor='white', c=test_labels[:,0],cmap=camp)
-
-	plt.show()
-	#labels = labels.transpose
-	#predicted = predicted.values
-	"""
-	plt.figure(figsize=(10, 10)) 
-	plt.scatter(data_2D[:,0], data_2D[:,1],marker="v",  c=labels)
-	plt.scatter(test_data[:,0], test_data[:,1],marker="x",  c=predicted[:])
-	plt.title(title)
-	"""
-
+	#plt.show()
 
 ####################################################################
 # Nearest Centroid Classifier
@@ -101,7 +93,7 @@ orl_data_2D = applyPCA(orl_data)
 MNIST_2D = applyPCA(np.vstack((MNIST_train_data,MNIST_test_data)))
 
 MNIST_train_2D = MNIST_2D[:60000]
-MNIST_test_2D = MNIST_2D[60000:]
+MNIST_test_2D =  MNIST_2D[60000:]
 
 #orlD_Train , orlD_Test , orlL_Train, orlL_Test  = train_test_split(orl_data_2D, orl_data_labels, test_size=0.3, random_state=2)
 
@@ -121,7 +113,8 @@ del orl_data_2D
 del MNIST_2D
 
 ####################################################################
-# orl Data Nearest Centroid Classifier
+# orl data Nearest Centroid Classifier
+
 classifierORL = NearestCentroidClassifier(orlD_Train,orlL_Train)
 
 print("Nearest Centroid Classifier score for orl Data: "+ str(classifierORL.score(orlD_Test, orlL_Test)))
@@ -131,64 +124,141 @@ del classifierORL
 nscc = NearestSubCentroidClassifier.CentroidClassifier(orlD_Train,orlL_Train, False ,1	)
 nscc.centroids(0)
 print("Nearest Centroid Classifier mine score for orl Data:  " + str(nscc.score(orlD_Test, orlL_Test)))
-"""
 del nscc
+
+####################################################################
+# orl data Nearest Centroid Classifier sub 2
+
 nscc2 = NearestSubCentroidClassifier.CentroidClassifier(orlD_Train,orlL_Train, True ,1	)
 nscc2.centroids(2)
 print("Nearest Centroid Classifier sub2 mine score for orl Data:  " + str(nscc2.score(orlD_Test, orlL_Test)))
 del nscc2
+
+####################################################################
+#  orl data Nearest Centroid Classifier sub 3
 nscc3 = NearestSubCentroidClassifier.CentroidClassifier(orlD_Train,orlL_Train, True ,1	)
 nscc3.centroids(3)
 print("Nearest Centroid Classifier sub3 mine score for orl Data:  " + str(nscc3.score(orlD_Test, orlL_Test)))
 del nscc3
+
+####################################################################
+# orl data Nearest Centroid Classifier sub 5
 nscc5 = NearestSubCentroidClassifier.CentroidClassifier(orlD_Train,orlL_Train, True ,1	)
 nscc5.centroids(5)
 print("Nearest Centroid Classifier sub5 mine score for orl Data:  " + str(nscc5.score(orlD_Test, orlL_Test)))
 del nscc5
-"""
+
 ####################################################################
-#MNIST Data Nearest Neighbors Classifier
+#  orl data Nearest Neighbors Classifier
+classifierORL = NearestNeighborsClassifier(orlD_Train,orlL_Train)
+
+print("Nearest Neighbors Classifier score for orl Data:  "+ str(classifierORL.score(orlD_Test,orlL_Test)))
+displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierORL)
+del classifierORL
+
+####################################################################
+#orl Data Perceptron Backpropagation
+
+perceptron = []
+for i in range(int(np.amax(orlL_Train))):
+	#print("Perceptron nr:" + str(i))
+	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=16)
+	labels = np.where(orlL_Train == i+1, 1, 0)
+	ppn.train_weights(orlD_Train, labels) 
+	perceptron.append(ppn)
+#	print("Finished perceptron training nr."+ str(i))
+	del ppn,labels
+bias = np.ones(len(orlD_Test))
+orlDpB_Test = np.c_[ bias,orlD_Test ]
+score= 0
+for d in range(orlDpB_Test.shape[0]):
+	for p in range(len(perceptron)):	
+		if perceptron[p].predict(orlDpB_Test[d]) == 1 and  p+1 == orlL_Test[d]:
+			score += 1
+print("Perceptron Backpropagation score for orl data: "+str(score/orlDpB_Test.shape[0]))
+del  perceptron, bias, orlDpB_Test
+
+####################################################################
+# MNIST Nearest Centroid Classifier
+
 classifierMNIST = NearestCentroidClassifier(MNIST_train_2D,MNIST_train_labels)
 
 print("Nearest Centroid Classifier score for MNIST Data: " + str(classifierMNIST.score(MNIST_test_2D,MNIST_test_labels)))
 displayData(MNIST_train_2D,MNIST_train_labels,MNIST_test_2D, MNIST_test_labels, classifierMNIST)
 del classifierMNIST
 
+
+
 nsccM = NearestSubCentroidClassifier.CentroidClassifier(MNIST_train_2D,MNIST_train_labels, False, 0)
 nsccM.centroids(0)
 print("Nearest Centroid Classifier mine score for MNIST Data:  " + str(nsccM.score(MNIST_test_2D, MNIST_test_labels)))
 del nsccM
-"""
+
+####################################################################
+# MNIST data Nearest Centroid Classifier sub 2
+
 nsccM2 = NearestSubCentroidClassifier.CentroidClassifier(MNIST_train_2D,MNIST_train_labels, True, 0)
 nsccM2.centroids(2)
 print("Nearest Centroid Classifier sub2 mine score for MNIST Data:  " + str(nsccM2.score(MNIST_test_2D, MNIST_test_labels)))
 del nsccM2
+
+####################################################################
+#  MNIST data Nearest Centroid Classifier sub 3
 nsccM3 = NearestSubCentroidClassifier.CentroidClassifier(MNIST_train_2D,MNIST_train_labels, True, 0)
 nsccM3.centroids(3)
 print("Nearest Centroid Classifier sub3 mine score for MNIST Data:  " + str(nsccM3.score(MNIST_test_2D, MNIST_test_labels)))
 del nsccM3
+
+####################################################################
+#  MNIST data Nearest Centroid Classifier sub 5
 nsccM5 = NearestSubCentroidClassifier.CentroidClassifier(MNIST_train_2D,MNIST_train_labels, True, 0)
 nsccM5.centroids(5)
 print("Nearest Centroid Classifier sub5 mine score for MNIST Data:  " + str(nsccM5.score(MNIST_test_2D, MNIST_test_labels)))
 del nsccM5
 
 ####################################################################
-# orl Data Nearest Neighbors Classifier
-classifierORL = NearestNeighborsClassifier(orlD_Train,orlL_Train)
+#  MNIST data Nearest Neighbors Classifier
 
-print("Nearest Neighbors Classifier score for orl Data:  "+ str(classifierORL.score(orlD_Test,orlL_Test)))
-
-displayData(orlD_Train,orlL_Train,orlD_Test, classifierORL.predict(orlD_Test), "NearestNeighborsClassifier")
-del classifierORL
-####################################################################
-#MNIST Data Nearest Neighbors Classifier
 classifierMNIST = NearestNeighborsClassifier(MNIST_train_2D,MNIST_train_labels)
 
 print ("Nearest Neighbors Classifier score for MNIST Data:  " + str(classifierMNIST.score(MNIST_test_2D,MNIST_test_labels) ))
-
-displayData(MNIST_train_2D,MNIST_train_labels,MNIST_test_2D, classifierMNIST.predict(MNIST_test_2D), "NearestNeighborsClassifier")
+displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierMNIST)
 del classifierMNIST
 
+####################################################################
+#MNIST Data Perceptron Backpropagation
+
+perceptron = []
+
+for i in range(int(np.amax(MNIST_train_labels))+1):
+	#print("Perceptron nr:" + str(i))
+	ppn = Perceptron.Perceptron(learningRate=0.01, nb_epoch=10)
+	labels = np.where(MNIST_train_labels == i, 1, 0)
+	ppn.train_weights(MNIST_train_2D, labels) 
+	perceptron.append(ppn)
+#	print("Finished perceptron training nr."+ str(i))
+	del ppn,labels
+#print("Finish training")
+bias = np.ones(len(MNIST_test_2D))
+MNIST_test_bias_data =np.c_[ bias,MNIST_test_2D ]
+score= 0
+for d in range(MNIST_test_bias_data.shape[0]):
+	for p in range(len(perceptron)):	
+		if perceptron[p].predict(MNIST_test_bias_data[d]) == 1 and  p == MNIST_test_labels[d]:
+			score += 1
+print("Perceptron Backpropagation score for MNIST data: "+str(score/MNIST_test_bias_data.shape[0]))
+# MNIST_test_2D  MNIST_train_2D  MNIST_train_labels  MNIST_test_labels
+
+"""
+ppn = Perceptron.Perceptron(learningRate=0.5, n_iter=20)
+labels = np.where(orlL_Train == 1, 1, 0)
+	#print(labels.flatten())
+
+ppn.train_weights(orlD_Train, labels) 
+"""
+    #print(orlL_Train)
+	#orlD_Train  orlD_Test orlL_Train  orlL_Test 
+"""
 ####################################################################
 #orl Data Nearest Neural_Network Backpropagation
 NN = Neural_Network.Neural_Network(0.05,2,20,40)
