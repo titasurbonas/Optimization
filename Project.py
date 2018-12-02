@@ -162,7 +162,7 @@ del classifierORL
 perceptron = []
 for i in range(int(np.amax(orlL_Train))):
 	#print("Perceptron nr:" + str(i))
-	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=16)
+	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=16 ,MSE=False)
 	labels = np.where(orlL_Train == i+1, 1, 0)
 	ppn.train_weights(orlD_Train, labels) 
 	perceptron.append(ppn)
@@ -176,6 +176,25 @@ for d in range(orlDpB_Test.shape[0]):
 		if perceptron[p].predict(orlDpB_Test[d]) == 1 and  p+1 == orlL_Test[d]:
 			score += 1
 print("Perceptron Backpropagation score for orl data: "+str(score/orlDpB_Test.shape[0]))
+del  perceptron, bias, orlDpB_Test
+
+perceptron = []
+for i in range(int(np.amax(orlL_Train))):
+	#print("Perceptron nr:" + str(i))
+	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=16,MSE=True)
+	labels = np.where(orlL_Train == i+1, 1, 0)
+	ppn.train_weights(orlD_Train, labels) 
+	perceptron.append(ppn)
+#	print("Finished perceptron training nr."+ str(i))
+	del ppn,labels
+bias = np.ones(len(orlD_Test))
+orlDpB_Test = np.c_[ bias,orlD_Test ]
+score= 0
+for d in range(orlDpB_Test.shape[0]):
+	for p in range(len(perceptron)):	
+		if perceptron[p].predict(orlDpB_Test[d]) == 1 and  p+1 == orlL_Test[d]:
+			score += 1
+print("Perceptron Backpropagation MSE score for orl data: "+str(score/orlDpB_Test.shape[0]))
 del  perceptron, bias, orlDpB_Test
 
 ####################################################################
@@ -232,7 +251,7 @@ perceptron = []
 
 for i in range(int(np.amax(MNIST_train_labels))+1):
 	#print("Perceptron nr:" + str(i))
-	ppn = Perceptron.Perceptron(learningRate=0.01, nb_epoch=10)
+	ppn = Perceptron.Perceptron(learningRate=0.01, nb_epoch=10, MSE=False)
 	labels = np.where(MNIST_train_labels == i, 1, 0)
 	ppn.train_weights(MNIST_train_2D, labels) 
 	perceptron.append(ppn)
@@ -247,6 +266,28 @@ for d in range(MNIST_test_bias_data.shape[0]):
 		if perceptron[p].predict(MNIST_test_bias_data[d]) == 1 and  p == MNIST_test_labels[d]:
 			score += 1
 print("Perceptron Backpropagation score for MNIST data: "+str(score/MNIST_test_bias_data.shape[0]))
+del  perceptron, bias, MNIST_test_bias_data
+
+perceptron = []
+
+for i in range(int(np.amax(MNIST_train_labels))+1):
+	#print("Perceptron nr:" + str(i))
+	ppn = Perceptron.Perceptron(learningRate=0.01, nb_epoch=10, MSE=True)
+	labels = np.where(MNIST_train_labels == i, 1, 0)
+	ppn.train_weights(MNIST_train_2D, labels) 
+	perceptron.append(ppn)
+	print("Finished perceptron training nr."+ str(i))
+	del ppn,labels
+#print("Finish training")
+bias = np.ones(len(MNIST_test_2D))
+MNIST_test_bias_data =np.c_[ bias,MNIST_test_2D ]
+score= 0
+for d in range(MNIST_test_bias_data.shape[0]):
+	for p in range(len(perceptron)):	
+		if perceptron[p].predict(MNIST_test_bias_data[d]) == 1 and  p == MNIST_test_labels[d]:
+			score += 1
+print("Perceptron Backpropagation score for MNIST data: "+str(score/MNIST_test_bias_data.shape[0]))
+del  perceptron, bias, MNIST_test_bias_data
 # MNIST_test_2D  MNIST_train_2D  MNIST_train_labels  MNIST_test_labels
 
 """
