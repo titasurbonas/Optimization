@@ -168,34 +168,36 @@ for i in range(int(np.amax(orlL_Train))):
 	perceptron.append(ppn)
 #	print("Finished perceptron training nr."+ str(i))
 	del ppn,labels
-bias = np.ones(len(orlD_Test))
-orlDpB_Test = np.c_[ bias,orlD_Test ]
 score= 0
-for d in range(orlDpB_Test.shape[0]):
+for d in range(orlD_Test.shape[0]):
+	activation= []
 	for p in range(len(perceptron)):	
-		if perceptron[p].predict(orlDpB_Test[d]) == 1 and  p+1 == orlL_Test[d]:
-			score += 1
-print("Perceptron Backpropagation score for orl data: "+str(score/orlDpB_Test.shape[0]))
-del  perceptron, bias, orlDpB_Test
+		if perceptron[p].predict(orlD_Test[d]) == 1:
+			activation.append(p)
+	if len(activation) == 1 and activation[0]+1 == orlL_Test[d]:
+		score += 1
+	#print(activation)
+print("Perceptron Backpropagation score for orl data: "+str(score/orlD_Test.shape[0]))
+del  perceptron
 
 perceptron = []
 for i in range(int(np.amax(orlL_Train))):
 	#print("Perceptron nr:" + str(i))
-	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=16,MSE=True)
+	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=200,MSE=True)
 	labels = np.where(orlL_Train == i+1, 1, 0)
 	ppn.train_weights(orlD_Train, labels) 
 	perceptron.append(ppn)
-#	print("Finished perceptron training nr."+ str(i))
 	del ppn,labels
-bias = np.ones(len(orlD_Test))
-orlDpB_Test = np.c_[ bias,orlD_Test ]
-score= 0
-for d in range(orlDpB_Test.shape[0]):
+
+for d in range(orlD_Test.shape[0]):
+	activation= []
 	for p in range(len(perceptron)):	
-		if perceptron[p].predict(orlDpB_Test[d]) == 1 and  p+1 == orlL_Test[d]:
-			score += 1
-print("Perceptron Backpropagation MSE score for orl data: "+str(score/orlDpB_Test.shape[0]))
-del  perceptron, bias, orlDpB_Test
+		if perceptron[p].predict(orlD_Test[d]) == 1:
+			activation.append(p)
+	if len(activation) == 1 and activation[0]+1 == orlL_Test[d]:
+		score += 1
+print("Perceptron Backpropagation MSE score for orl data: "+str(score/orlD_Test.shape[0]))
+del  perceptron
 
 ####################################################################
 # MNIST Nearest Centroid Classifier
@@ -257,16 +259,13 @@ for i in range(int(np.amax(MNIST_train_labels))+1):
 	perceptron.append(ppn)
 #	print("Finished perceptron training nr."+ str(i))
 	del ppn,labels
-#print("Finish training")
-bias = np.ones(len(MNIST_test_2D))
-MNIST_test_bias_data =np.c_[ bias,MNIST_test_2D ]
 score= 0
-for d in range(MNIST_test_bias_data.shape[0]):
+for d in range(MNIST_test_2D.shape[0]):
 	for p in range(len(perceptron)):	
-		if perceptron[p].predict(MNIST_test_bias_data[d]) == 1 and  p == MNIST_test_labels[d]:
+		if perceptron[p].predict(MNIST_test_2D[d]) == 1 and  p == MNIST_test_labels[d]:
 			score += 1
-print("Perceptron Backpropagation score for MNIST data: "+str(score/MNIST_test_bias_data.shape[0]))
-del  perceptron, bias, MNIST_test_bias_data
+print("Perceptron Backpropagation score for MNIST data: "+str(score/MNIST_test_2D.shape[0]))
+del  perceptron
 
 perceptron = []
 
@@ -276,18 +275,16 @@ for i in range(int(np.amax(MNIST_train_labels))+1):
 	labels = np.where(MNIST_train_labels == i, 1, 0)
 	ppn.train_weights(MNIST_train_2D, labels) 
 	perceptron.append(ppn)
-	print("Finished perceptron training nr."+ str(i))
+
 	del ppn,labels
-#print("Finish training")
-bias = np.ones(len(MNIST_test_2D))
-MNIST_test_bias_data =np.c_[ bias,MNIST_test_2D ]
+
 score= 0
-for d in range(MNIST_test_bias_data.shape[0]):
+for d in range(MNIST_test_2D.shape[0]):
 	for p in range(len(perceptron)):	
-		if perceptron[p].predict(MNIST_test_bias_data[d]) == 1 and  p == MNIST_test_labels[d]:
+		if perceptron[p].predict(MNIST_test_2D[d]) == 1 and  p == MNIST_test_labels[d]:
 			score += 1
-print("Perceptron Backpropagation score for MNIST data: "+str(score/MNIST_test_bias_data.shape[0]))
-del  perceptron, bias, MNIST_test_bias_data
+print("Perceptron Backpropagation MSE score for MNIST data: "+str(score/MNIST_test_2D.shape[0]))
+del  perceptron
 # MNIST_test_2D  MNIST_train_2D  MNIST_train_labels  MNIST_test_labels
 
 """

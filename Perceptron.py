@@ -1,4 +1,3 @@
-
 import sys
 import numpy as np
 
@@ -6,50 +5,32 @@ import numpy as np
 class Perceptron(object):
 	#The constructor of our class.
 	def __init__(self, learningRate, nb_epoch,MSE ):
-		np.random.seed(2)
+		np.random.seed(3)
 		self.learningRate = learningRate
 		self.nb_epoch = nb_epoch
 		self.MSE =MSE
-	def train_weights(self,data,labels,stop_early=True,verbose=True):		
+	def train_weights(self,data,labels):		
 		from sklearn.metrics import mean_squared_error
-		data_rows, data_columns = data.shape
-		data_columns = data_columns+1
-		self.weights = np.random.normal(loc=0.0, scale=0.001, size=data_columns)
-		#print(self.weights)
-		bias = np.ones(len(data))
-		data = np.c_[ bias,data ]
+		self.weights = np.random.normal( size=data.shape[1])
+
+		self.loss = []
+		self.bias = 1
 
 		for epoch in range(self.nb_epoch):
-			cur_acc = self.accuracy(data, labels)
-			
-			#if epoch==self.nb_epoch-1:
-				#print(" \nWeights: ",self.weights)
-				#print("Accuracy: ",cur_acc)
-			
-			if cur_acc==1.0 and stop_early: break 
-
-			
-			for i in range(len(data)):
+			if not self.MSE: 
+				for d, l in zip(data , labels):
+					error = l - self.predict(d)
+					self.weights += self.learningRate*error*d
+					self.bias += error 
+					del error
+			else:
+				error = labels- self.predict(data)**2
+				error = np.dot(error, data)
+				error= np.mean(error, axis=0)
+				self.weights += self.learningRate*error
+				self.bias += np.sum(error) 
+				del error
 		
-				prediction = self.predict(data[i]) # get predicted classificaion
-				if self.MSE:	error =mean_squared_error(labels[i], [prediction]) # get error from real classification
-				else:			error = labels[i]-prediction         # get error from real classification
-				for j in range(len(self.weights)):  # calculate new weight for each node
-				
-					self.weights[j] = self.weights[j]+(self.learningRate*error*data[i][j]) 
-	
-	def accuracy(self,data, labels):
-		num_correct = 0.0
-		preds       = []
-		for i in range(len(data)):
-			
-			pred   = self.predict(data[i]) # get predicted classification
-			preds.append(pred)
-			if pred==labels[i]: num_correct+=1.0 
-		return num_correct/float(len(data))
-
-	def predict(self,inputs):
-		activation=0.0
-		for i,w in zip(inputs,self.weights):
-			activation += i*w 
-		return 1.0 if activation>=0.0 else 0.0
+	def predict(self, data):
+		#Heaviside function. Returns 1 or 0 
+		return np.where((data.dot(self.weights)+self.bias)>=0.0 ,1 , 0)
