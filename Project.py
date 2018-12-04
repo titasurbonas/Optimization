@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-
+from matplotlib import pyplot as plt
 import numpy as np
 import NearestSubCentroidClassifier, Neural_Network , Perceptron
 from sklearn.model_selection import train_test_split
@@ -56,7 +56,7 @@ def displayData(data_2D, labels, test_data ,test_labels,algorithm):
 	xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
 						 np.arange(y_min, y_max, h))
 	
-	Z = algorithm.predict(np.c_[xx.ravel(), yy.ravel()])
+	Z = algorithm[1].predict(np.c_[xx.ravel(), yy.ravel()])
 
 	Z = Z.reshape(xx.shape)
 
@@ -69,7 +69,7 @@ def displayData(data_2D, labels, test_data ,test_labels,algorithm):
 		test_labels= test_labels[::50]
 
 	plt.scatter(test_data[:,0], test_data[:,1],edgecolor='white', c=test_labels[:,0],cmap=camp)
-	#plt.show()
+	plt.show()
 
 ####################################################################
 # Nearest Centroid Classifier
@@ -118,7 +118,7 @@ del MNIST_2D
 classifierORL = NearestCentroidClassifier(orlD_Train,orlL_Train)
 
 print("Nearest Centroid Classifier score for orl Data: "+ str(classifierORL.score(orlD_Test, orlL_Test)))
-displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierORL)
+#displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierORL)
 del classifierORL
 
 nscc = NearestSubCentroidClassifier.CentroidClassifier(orlD_Train,orlL_Train, False ,1	)
@@ -153,7 +153,7 @@ del nscc5
 classifierORL = NearestNeighborsClassifier(orlD_Train,orlL_Train)
 
 print("Nearest Neighbors Classifier score for orl Data:  "+ str(classifierORL.score(orlD_Test,orlL_Test)))
-displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierORL)
+#displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierORL)
 del classifierORL
 
 ####################################################################
@@ -162,7 +162,7 @@ del classifierORL
 perceptron = []
 for i in range(int(np.amax(orlL_Train))):
 	#print("Perceptron nr:" + str(i))
-	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=16 ,MSE=False)
+	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=50 ,MSE=False)
 	labels = np.where(orlL_Train == i+1, 1, 0)
 	ppn.train_weights(orlD_Train, labels) 
 	perceptron.append(ppn)
@@ -178,15 +178,17 @@ for d in range(orlD_Test.shape[0]):
 		score += 1
 	#print(activation)
 print("Perceptron Backpropagation score for orl data: "+str(score/orlD_Test.shape[0]))
+#displayData(MNIST_train_2D,MNIST_train_labels,MNIST_test_2D, MNIST_test_labels, perceptron)
 del  perceptron
 
 perceptron = []
 for i in range(int(np.amax(orlL_Train))):
 	#print("Perceptron nr:" + str(i))
-	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=200,MSE=True)
+	ppn = Perceptron.Perceptron(learningRate=0.05, nb_epoch=500,MSE=True)
 	labels = np.where(orlL_Train == i+1, 1, 0)
 	ppn.train_weights(orlD_Train, labels) 
 	perceptron.append(ppn)
+
 	del ppn,labels
 
 for d in range(orlD_Test.shape[0]):
@@ -205,7 +207,7 @@ del  perceptron
 classifierMNIST = NearestCentroidClassifier(MNIST_train_2D,MNIST_train_labels)
 
 print("Nearest Centroid Classifier score for MNIST Data: " + str(classifierMNIST.score(MNIST_test_2D,MNIST_test_labels)))
-displayData(MNIST_train_2D,MNIST_train_labels,MNIST_test_2D, MNIST_test_labels, classifierMNIST)
+#displayData(MNIST_train_2D,MNIST_train_labels,MNIST_test_2D, MNIST_test_labels, classifierMNIST)
 del classifierMNIST
 
 
@@ -243,7 +245,7 @@ del nsccM5
 classifierMNIST = NearestNeighborsClassifier(MNIST_train_2D,MNIST_train_labels)
 
 print ("Nearest Neighbors Classifier score for MNIST Data:  " + str(classifierMNIST.score(MNIST_test_2D,MNIST_test_labels) ))
-displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierMNIST)
+#displayData(orlD_Train,orlL_Train,orlD_Test, orlL_Test, classifierMNIST)
 del classifierMNIST
 
 ####################################################################
@@ -252,26 +254,38 @@ del classifierMNIST
 perceptron = []
 
 for i in range(int(np.amax(MNIST_train_labels))+1):
-	#print("Perceptron nr:" + str(i))
-	ppn = Perceptron.Perceptron(learningRate=0.01, nb_epoch=10, MSE=False)
+	print("Perceptron nr:" + str(i))
+	ppn = Perceptron.Perceptron(learningRate=0.5, nb_epoch=50000, MSE=False)
 	labels = np.where(MNIST_train_labels == i, 1, 0)
+	#for x in range(1,3):
+	#print("training on data set: "+ str(x))
 	ppn.train_weights(MNIST_train_2D, labels) 
 	perceptron.append(ppn)
-#	print("Finished perceptron training nr."+ str(i))
+	#print("Finished perceptron training nr."+ str(i))
 	del ppn,labels
 score= 0
-for d in range(MNIST_test_2D.shape[0]):
+for d in range(MNIST_test_2D.shape[0]):	
+	activation= []
 	for p in range(len(perceptron)):	
-		if perceptron[p].predict(MNIST_test_2D[d]) == 1 and  p == MNIST_test_labels[d]:
-			score += 1
+		if perceptron[p].predict(MNIST_test_2D[d]) == 1:
+			activation.append(p)
+	if len(activation) == 1 and activation[0] == MNIST_test_labels[d]:
+		score += 1
 print("Perceptron Backpropagation score for MNIST data: "+str(score/MNIST_test_2D.shape[0]))
+for p in range(len(perceptron)):
+	print("perceptron nr."+ str(p) +"weights: "+str(perceptron[p].weights) + "bias: "+str(perceptron[p].bias)) 
+for p in range(len(perceptron)):
+	fig =plt.figure(figsize=(8,4))
+	imageplot =plt.plot(perceptron[p].error_)
+	plt.xlabel("Epoch")
+#plt.show()
 del  perceptron
 
 perceptron = []
 
 for i in range(int(np.amax(MNIST_train_labels))+1):
-	#print("Perceptron nr:" + str(i))
-	ppn = Perceptron.Perceptron(learningRate=0.01, nb_epoch=10, MSE=True)
+	print("Perceptron trained nr:" + str(i))
+	ppn = Perceptron.Perceptron(learningRate=0.01, nb_epoch=50000, MSE=True)
 	labels = np.where(MNIST_train_labels == i, 1, 0)
 	ppn.train_weights(MNIST_train_2D, labels) 
 	perceptron.append(ppn)
@@ -280,11 +294,23 @@ for i in range(int(np.amax(MNIST_train_labels))+1):
 
 score= 0
 for d in range(MNIST_test_2D.shape[0]):
+	activation= []
 	for p in range(len(perceptron)):	
-		if perceptron[p].predict(MNIST_test_2D[d]) == 1 and  p == MNIST_test_labels[d]:
-			score += 1
+		if perceptron[p].predict(MNIST_test_2D[d]) == 1:
+			activation.append(p)
+	if len(activation) == 1 and activation[0] == MNIST_test_labels[d]:
+		score += 1
 print("Perceptron Backpropagation MSE score for MNIST data: "+str(score/MNIST_test_2D.shape[0]))
+for p in range(len(perceptron)):
+	print("perceptron nr."+ str(p) +"weights: "+str(perceptron[p].weights) + "bias: "+str(perceptron[p].bias)) 
+for p in range(len(perceptron)):
+	fig =plt.figure(figsize=(8,4))
+	a=fig.add_subplot(1,2,1)	
+	imageplot =plt.plot(perceptron[p].error_)
+	plt.xlabel("Epoch")
+plt.show()
 del  perceptron
+
 # MNIST_test_2D  MNIST_train_2D  MNIST_train_labels  MNIST_test_labels
 
 """
